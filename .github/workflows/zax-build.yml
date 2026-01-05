@@ -22,6 +22,11 @@ jobs:
         with:
           distribution: temurin
           java-version: 8
+          
+      - name: Install legacy Linux dependencies for aapt
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y zlib1g
 
       - name: Install legacy Android SDK Tools (r25.2.5)
         shell: bash
