@@ -42,8 +42,7 @@ jobs:
           echo yes | "$ANDROID_SDK_ROOT/tools/android" update sdk \
             --no-ui \
             --filter platform-tools,android-22,build-tools-23.0.1
-            -y
-
+      
           # Sanity checks
           test -x "$ANDROID_SDK_ROOT/tools/android"
           test -d "$ANDROID_SDK_ROOT/platforms/android-22"
