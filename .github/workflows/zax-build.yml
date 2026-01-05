@@ -34,18 +34,51 @@ jobs:
             lib32z1 \
             lib32stdc++6
 
-      - name: Build MemorizingTrustManager jar (no gradle)
+      - name: Build MemorizingTrustManager AAR via temp Gradle
         run: |
           git clone --depth 1 https://github.com/ge0rg/MemorizingTrustManager.git /tmp/mtm
-          mkdir -p /tmp/mtm-classes
-          # Собираем ВСЕ .java (если там есть android imports — компилируем с android.jar)
-          ANDROID_JAR="$ANDROID_SDK_ROOT/platforms/android-22/android.jar"
-          find /tmp/mtm -name "*.java" > /tmp/mtm-sources.txt
-          javac -source 1.7 -target 1.7 -cp "$ANDROID_JAR" -d /tmp/mtm-classes @/tmp/mtm-sources.txt
-          (cd /tmp/mtm-classes && jar cf /tmp/MemorizingTrustManager.jar .)
+
+          cat << 'EOF' > /tmp/mtm/build.gradle
+          buildscript {
+              repositories {
+                  mavenCentral()
+                  google()
+              }
+          }
+          apply plugin: 'com.android.library'
+
+          android {
+              compileSdkVersion 22
+              buildToolsVersion "23.0.1"
+
+              defaultConfig {
+                  minSdkVersion 8
+                  targetSdkVersion 22
+              }
+          }
+
+          repositories {
+              mavenCentral()
+              google()
+          }
+          EOF
+
+          mkdir -p /tmp/mtm/src/main/java
+          # Copy all .java into module structure
+          find /tmp/mtm -name '*.java' -exec cp --parents "{}" /tmp/mtm/src/main/java/ \;
+
+          pushd /tmp/mtm
+          mkdir -p gradle/wrapper
+          wget https://services.gradle.org/distributions/gradle-4.10.3-all.zip -O gradle/wrapper/gradle.zip
+          unzip -qq gradle/wrapper/gradle.zip -d gradle/wrapper
+          chmod +x gradlew || true
+          # Build AAR
+          ./gradlew assembleRelease --no-daemon
+          popd
 
           mkdir -p app/libs
-          cp /tmp/MemorizingTrustManager.jar app/libs/
+          cp /tmp/mtm/build/outputs/aar/*.aar app/libs/
+
 
       
       - name: Install legacy Android SDK Tools (r25.2.5)
