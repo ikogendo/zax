@@ -77,6 +77,22 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      - name: Build MemorizingTrustManager jar
+        run: |
+          git clone --depth 1 https://github.com/ge0rg/MemorizingTrustManager.git /tmp/mtm
+          export ANDROID_JAR="$ANDROID_SDK_ROOT/platforms/android-22/android.jar"
+          mkdir -p /tmp/mtm_classes
+          find /tmp/mtm/src -name "*.java" > /tmp/mtm_sources.txt
+          javac -source 1.7 -target 1.7 \
+            -bootclasspath "$ANDROID_JAR" \
+            -cp "$ANDROID_JAR" \
+            -d /tmp/mtm_classes \
+            @/tmp/mtm_sources.txt
+          jar cf /tmp/MemorizingTrustManager.jar -C /tmp/mtm_classes .
+          mkdir -p app/libs
+          cp /tmp/MemorizingTrustManager.jar app/libs/
+
+
       - name: Build Debug APK
         run: ./gradlew assembleDebug --no-daemon
 
