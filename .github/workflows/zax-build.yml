@@ -2,7 +2,7 @@ name: Android CI (ZAX legacy – fixed)
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "nothing" ]
   pull_request:
 
 jobs:
