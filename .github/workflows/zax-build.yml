@@ -13,14 +13,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up JDK
+      - name: Set up JDK 8
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 8
 
-      - name: Setup Android SDK
+      - name: Setup Android SDK (NO update)
         uses: android-actions/setup-android@v3
+        env:
+          SKIP_JDK_VERSION_CHECK: true
+          ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
