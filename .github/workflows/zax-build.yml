@@ -34,6 +34,36 @@ jobs:
             lib32z1 \
             lib32stdc++6
 
+      
+      - name: Install legacy Android SDK Tools (r25.2.5)
+        shell: bash
+        run: |
+          set -eux
+
+          mkdir -p "$ANDROID_SDK_ROOT"
+          cd "$ANDROID_SDK_ROOT"
+
+          curl -fsSL -o tools.zip https://dl.google.com/android/repository/tools_r25.2.5-linux.zip
+          unzip -q tools.zip
+          rm -f tools.zip
+
+          echo "$ANDROID_SDK_ROOT/tools" >> $GITHUB_PATH
+          echo "$ANDROID_SDK_ROOT/platform-tools" >> $GITHUB_PATH
+
+          # Install required SDK packages USING android tool (not sdkmanager)
+          echo yes | "$ANDROID_SDK_ROOT/tools/android" update sdk \
+            --no-ui \
+            --filter platform-tools,android-22,build-tools-23.0.1
+
+         # ls -lah "$ANDROID_SDK_ROOT/*"
+          # Sanity checks
+         # test -x "$ANDROID_SDK_ROOT/tools/android"
+         # test -d "$ANDROID_SDK_ROOT/platforms/android-22"
+          #test -d "$ANDROID_SDK_ROOT/build-tools/23.0.1"
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
       - name: Build MemorizingTrustManager AAR via temp Gradle
         run: |
           git clone --depth 1 https://github.com/ge0rg/MemorizingTrustManager.git /tmp/mtm
@@ -80,50 +110,20 @@ jobs:
           cp /tmp/mtm/build/outputs/aar/*.aar app/libs/
 
 
-      
-      - name: Install legacy Android SDK Tools (r25.2.5)
-        shell: bash
-        run: |
-          set -eux
-
-          mkdir -p "$ANDROID_SDK_ROOT"
-          cd "$ANDROID_SDK_ROOT"
-
-          curl -fsSL -o tools.zip https://dl.google.com/android/repository/tools_r25.2.5-linux.zip
-          unzip -q tools.zip
-          rm -f tools.zip
-
-          echo "$ANDROID_SDK_ROOT/tools" >> $GITHUB_PATH
-          echo "$ANDROID_SDK_ROOT/platform-tools" >> $GITHUB_PATH
-
-          # Install required SDK packages USING android tool (not sdkmanager)
-          echo yes | "$ANDROID_SDK_ROOT/tools/android" update sdk \
-            --no-ui \
-            --filter platform-tools,android-22,build-tools-23.0.1
-
-         # ls -lah "$ANDROID_SDK_ROOT/*"
-          # Sanity checks
-         # test -x "$ANDROID_SDK_ROOT/tools/android"
-         # test -d "$ANDROID_SDK_ROOT/platforms/android-22"
-          #test -d "$ANDROID_SDK_ROOT/build-tools/23.0.1"
-
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
-      - name: Build MemorizingTrustManager jar
-        run: |
-          git clone --depth 1 https://github.com/ge0rg/MemorizingTrustManager.git /tmp/mtm
-          export ANDROID_JAR="$ANDROID_SDK_ROOT/platforms/android-22/android.jar"
-          mkdir -p /tmp/mtm_classes
-          find /tmp/mtm/src -name "*.java" > /tmp/mtm_sources.txt
-          javac -source 1.7 -target 1.7 \
-            -bootclasspath "$ANDROID_JAR" \
-            -cp "$ANDROID_JAR" \
-            -d /tmp/mtm_classes \
-            @/tmp/mtm_sources.txt
-          jar cf /tmp/MemorizingTrustManager.jar -C /tmp/mtm_classes .
-          mkdir -p app/libs
-          cp /tmp/MemorizingTrustManager.jar app/libs/
+#      - name: Build MemorizingTrustManager jar
+#        run: |
+#          git clone --depth 1 https://github.com/ge0rg/MemorizingTrustManager.git /tmp/mtm
+#          export ANDROID_JAR="$ANDROID_SDK_ROOT/platforms/android-22/android.jar"
+#          mkdir -p /tmp/mtm_classes
+#          find /tmp/mtm/src -name "*.java" > /tmp/mtm_sources.txt
+#          javac -source 1.7 -target 1.7 \
+#            -bootclasspath "$ANDROID_JAR" \
+#           -cp "$ANDROID_JAR" \
+#            -d /tmp/mtm_classes \
+#            @/tmp/mtm_sources.txt
+#          jar cf /tmp/MemorizingTrustManager.jar -C /tmp/mtm_classes .
+#          mkdir -p app/libs
+#          cp /tmp/MemorizingTrustManager.jar app/libs/
 
 
       - name: Build Debug APK
