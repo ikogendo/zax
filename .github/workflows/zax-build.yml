@@ -2,7 +2,7 @@ name: Android CI (ZAX legacy – fixed)
 
 on:
   push:
-    branches: [ "main", "master" ]
+    branches: [ "forbuild" ]
   pull_request:
 
 jobs:
@@ -33,6 +33,20 @@ jobs:
             zlib1g:i386 \
             lib32z1 \
             lib32stdc++6
+
+      - name: Build MemorizingTrustManager jar (no gradle)
+        run: |
+          git clone --depth 1 https://github.com/ge0rg/MemorizingTrustManager.git /tmp/mtm
+          mkdir -p /tmp/mtm-classes
+          # Собираем ВСЕ .java (если там есть android imports — компилируем с android.jar)
+          ANDROID_JAR="$ANDROID_SDK_ROOT/platforms/android-22/android.jar"
+          find /tmp/mtm -name "*.java" > /tmp/mtm-sources.txt
+          javac -source 1.7 -target 1.7 -cp "$ANDROID_JAR" -d /tmp/mtm-classes @/tmp/mtm-sources.txt
+          (cd /tmp/mtm-classes && jar cf /tmp/MemorizingTrustManager.jar .)
+
+          mkdir -p app/libs
+          cp /tmp/MemorizingTrustManager.jar app/libs/
+
       
       - name: Install legacy Android SDK Tools (r25.2.5)
         shell: bash
