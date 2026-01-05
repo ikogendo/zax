@@ -50,3 +50,13 @@ android {
         }
     }
 }
+
+subprojects { project ->
+    afterEvaluate {
+        if (project.name.toLowerCase().contains("memorizingtrustmanager")) {
+            if (!project.configurations.findByName("default")) {
+                project.configurations.create("default")
+            }
+        }
+    }
+}
