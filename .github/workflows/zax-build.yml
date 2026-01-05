@@ -1,4 +1,4 @@
-name: Android CI
+name: Android CI (Legacy)
 
 on:
   push:
@@ -8,6 +8,10 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    env:
+      ANDROID_HOME: /usr/local/lib/android/sdk
+      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
 
     steps:
       - name: Checkout repository
@@ -19,17 +23,19 @@ jobs:
           distribution: temurin
           java-version: 8
 
-      - name: Setup Android SDK (NO update)
-        uses: android-actions/setup-android@v3
-        env:
-          SKIP_JDK_VERSION_CHECK: true
-          ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+      - name: Verify Java
+        run: java -version
+
+      - name: Verify Android SDK
+        run: |
+          ls $ANDROID_SDK_ROOT
+          ls $ANDROID_SDK_ROOT/platforms || true
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
       - name: Build Debug APK
-        run: ./gradlew assembleDebug
+        run: ./gradlew assembleDebug --no-daemon
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
